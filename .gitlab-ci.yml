@@ -1,0 +1,32 @@
+image: apertium/base:latest
+
+stages:
+  - build
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+workflow:
+  rules:
+    # Run on pushes so every branch update (including the merge commit on the
+    # default branch) gets a pipeline.
+    - if: $CI_PIPELINE_SOURCE == "push"
+    # Also run on merge-request pipelines so reviewers see a green check before
+    # the branch is merged.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+build-hfstol:
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - ./autogen.sh --prefix=/usr
+  script:
+    - make -j"$(nproc)"
+    - hfst-fst2fst -w -i tat.automorf.hfst -o tat.automorf.hfstol
+  artifacts:
+    name: "tat-automorf-hfstol"
+    paths:
+      - tat.automorf.hfstol
+    expire_in: 1 week
