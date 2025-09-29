@@ -1,0 +1,20 @@
+image: apertium/base:latest
+
+stages:
+  - build
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+build-hfstol:
+  stage: build
+  before_script:
+    - ./autogen.sh --prefix=/usr
+  script:
+    - make -j"$(nproc)"
+    - hfst-fst2fst -w -i tat.automorf.hfst -o tat.automorf.hfstol
+  artifacts:
+    name: "tat-automorf-hfstol"
+    paths:
+      - tat.automorf.hfstol
+    expire_in: 1 week
